@@ -1,21 +1,38 @@
-library(PAA)
-#Load GPR files
-my_data <- loadGPR(gpr.path="C:/Users/alex/alzhemerproject/Alzhemerproject/data", targets.path="C:/Users/alex/alzhemerproject/Alzhemerproject/data/targets.txt",array.type = "ProtoArray")
+try http:// if https:// URLs are not supported 
+source("https://bioconductor.org/biocLite.R")
+biocLite("PAA")
+# add library for normalisation data
+biocLite("vsn")
+# add librery for Protein Microarray Data Analysis
+library("PAA")
+install.packages("Rcpp")
 
-elist = my_data
 library(limma)
-my_data <- backgroundCorrect(elist, method="normexp", normexp.method="saddle")
+#Load GPR files
+my_data <- loadGPR(gpr.path="Data", targets.path="Data/targets.txt",array.type = "ProtoArray")
+# delete background
+bg_matrix <- backgroundCorrect(my_data, method="normexp", normexp.method="saddle")
 
 
-plotArray(elist=my_data, idx=3, data.type="bg", log=FALSE, normalized=FALSE, aggregation="min", colpal="topo.colors")
+library("vsn")
+# normalize data
+plotMAPlots(elist=elist, idx=10)
+elist_1 <- normalizeArrays(elist=elist, method="cyclicloess", cyclicloess.method="fast")
 
 
+library("pheatmap")
+# take matrix part
+E <- elist_1$E
+head(E)
 
+# take names without trash
+gn = sub(pattern = 'Hs~', rep = "", x = elist_1$genes$Name)
+gn = sub(pattern = '~.*', rep = "", gn)
+gn = sub(pattern = '.*:', rep = "", gn)
+head(gn)
 
-
-
-elist = my_data
-lot1 <- elist$targets[elist$targets$Batch=='Batch1','ArrayID']
-lot2 <- elist$targets[elist$targets$Batch=='Batch1','ArrayID']
-elist.bF <- batchFilter(elist=elist, lot1=lot1, lot2=lot2, log=FALSE, p.thresh=0.001, fold.thresh=3)
-
+#add names to matrix
+row.names(E) <- gn
+aggr <- aggregate(E, list(gn), mean)
+row.names(aggr) <- aggr$Group.1
+aggr <- aggr[-1]

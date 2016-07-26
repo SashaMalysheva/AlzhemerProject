@@ -1,0 +1,21 @@
+{
+    "collab_server" : "",
+    "contents" : "try http:// if https:// URLs are not supported \nsource(\"https://bioconductor.org/biocLite.R\")\nbiocLite(\"PAA\")\n# add library for normalisation data\nbiocLite(\"vsn\")\n# add librery for Protein Microarray Data Analysis\nlibrary(\"PAA\")\ninstall.packages(\"Rcpp\")\n\nlibrary(limma)\n#Load GPR files\nmy_data <- loadGPR(gpr.path=\"Data\", targets.path=\"Data/targets.txt\",array.type = \"ProtoArray\")\n# delete background\nbg_matrix <- backgroundCorrect(my_data, method=\"normexp\", normexp.method=\"saddle\")\n\n\nlibrary(\"vsn\")\n# normalize data\nplotMAPlots(elist=elist, idx=10)\nelist_1 <- normalizeArrays(elist=elist, method=\"cyclicloess\", cyclicloess.method=\"fast\")\n\n\nlibrary(\"pheatmap\")\n# take matrix part\nE <- elist_1$E\nhead(E)\n\n# take names without trash\ngn = sub(pattern = 'Hs~', rep = \"\", x = elist_1$genes$Name)\ngn = sub(pattern = '~.*', rep = \"\", gn)\ngn = sub(pattern = '.*:', rep = \"\", gn)\nhead(gn)\n\n#add names to matrix\nrow.names(E) <- gn\naggr <- aggregate(E, list(gn), mean)\nrow.names(aggr) <- aggr$Group.1\naggr <- aggr[-1]\n",
+    "created" : 1469521350527.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "2839511252",
+    "id" : "E89C87F7",
+    "lastKnownWriteTime" : 1469531072,
+    "last_content_update" : 1469531072538,
+    "path" : "C:/Users/alex/alzhemerproject/Alzhemerproject/data_preposetion.R",
+    "project_path" : "data_preposetion.R",
+    "properties" : {
+        "tempName" : "Untitled1"
+    },
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}
