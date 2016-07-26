@@ -1,0 +1,21 @@
+{
+    "collab_server" : "",
+    "contents" : "library(PAA)\n#Load GPR files\nmy_data <- loadGPR(gpr.path=\"C:/Users/alex/alzhemerproject/Alzhemerproject/data\", targets.path=\"C:/Users/alex/alzhemerproject/Alzhemerproject/data/targets.txt\",array.type = \"ProtoArray\")\n\nelist = my_data\nlibrary(limma)\nmy_data <- backgroundCorrect(elist, method=\"normexp\", normexp.method=\"saddle\")\n\n\nplotArray(elist=my_data, idx=3, data.type=\"bg\", log=FALSE, normalized=FALSE, aggregation=\"min\", colpal=\"topo.colors\")\n\n\n\n\n\n\nelist = my_data\nlot1 <- elist$targets[elist$targets$Batch=='Batch1','ArrayID']\nlot2 <- elist$targets[elist$targets$Batch=='Batch1','ArrayID']\nelist.bF <- batchFilter(elist=elist, lot1=lot1, lot2=lot2, log=FALSE, p.thresh=0.001, fold.thresh=3)\n\nhead(my_data&geneSetTest())\n",
+    "created" : 1469521350527.000,
+    "dirty" : true,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "8674657",
+    "id" : "E89C87F7",
+    "lastKnownWriteTime" : 1469526480,
+    "last_content_update" : 1469526888364,
+    "path" : "C:/Users/alex/alzhemerproject/Alzhemerproject/data_preposetion.R",
+    "project_path" : "data_preposetion.R",
+    "properties" : {
+        "tempName" : "Untitled1"
+    },
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}
