@@ -1,0 +1,22 @@
+{
+    "collab_server" : "",
+    "contents" : "#Load GPR files\nlibrary(PAA)\nmy_data <- loadGPR(\n  gpr.path=\"C:/Users/alex/alzhemerproject/Alzhemerproject/data\",\n  targets.path = \n    \"C:/Users/alex/alzhemerproject/Alzhemerproject/data/targets.txt\",\n  array.type = \"ProtoArray\");\n\n\n#plotArray(elist=my_data,  idx=3, data.type=\"bg\", log=FALSE, normalized=FALSE,aggregation=\"min\", colpal=\"topo.colors\")\n\n\n#Filtring\nlibrary(limma)\nelist <- backgroundCorrect(my_data, method=\"normexp\",\n                           normexp.method=\"saddle\");\n\n\n#Normalisation\nnorm_data <- normalizeArrays(elist = elist, \n                             method = \"cyclicloess\", cyclicloess.method = \"fast\");\n\n\n#Clear names\nname <- norm_data$genes$Name;\ngn = sub(pattern = 'Hs~', rep = \"\", x = name)\ngn = sub(pattern = '~.*', rep = \"\", gn)\ngn = sub(pattern = '.*:', rep = \"\", gn)\n\n\n#Naming\nrow.names(norm_data$E) <- gn;\n\n\n#Meaning\nE <- norm_data$E\nmean_data <- aggregate(E, list(gn), mean);\nrow.names(mean_data) <- mean_data$Group.1\nmean_data <- mean_data[-1];\n\n\n#P-value\np_premult <- apply(mean_data,1,function(x) {t.test(x[1:50],x[51:90])$p.value});\n\n\n#false discovery rate multy normalisation\nadjusted <- p.adjust(p_premult, method = \"bonferroni\", n = length(p_premult));\n\n\n#Just low p-value\nadj <- sort(adjusted[adjusted < 10^-5]);\n\n\n#Choise samples vith low p-value\nre <- which(rownames(mean_data) %in% names(adj));\ner <- as.matrix(mean_data[re, ]);\n\n\n#hitmap for samples with minimum p-value\nlibrary(pheatmap)\n#heatmap(er, col = cm.colors(256))\ner<-t(er)\n\n\n#Убираем кариляцию\nlibrary(caret)\ndescrCor <-  cor(er)\nhighlyCorDescr <- findCorrelation(descrCor, cutoff = .75)\ner <- er[,-highlyCorDescr]\n\n\n##Анализ главных компонент.\nmy_pca=prcomp(er, scale=T, center=T)\nimp=summary(my_pca)$importance\n\n\n##Вносим принадлежность к группе. График каменистой осыпи\nbarplot(imp[2,]*100,ylab=\"Persentage of variance\", \n        xlab=\"Principal Components\",\n        main = \"Variance explained by individual PC\", col=\"cyan3\")\n\n\n##Делаем таблицу данных из объекта - иначе его ggplot2 не распознает\nmy_pca1 <- as.data.frame(my_pca$x)\nmy_pca1$Group <- NA\nmy_pca1[1:50,'Group'] <- 'AD'\nmy_pca1[51:90,'Group'] <- 'NDC'\n\n\n##График главных компонент\nlibrary(ggplot2)\nggplot(my_pca1, aes(x = PC1, y = PC2, colour = Group)) + \n  theme_bw(base_size = 8) + \n  geom_point()+\n  labs(x = 'PC1', y = 'PC2') + \n  scale_colour_manual(values = c(\"#00ba38\",\"#d4170a\",\"#00ebf2\")) + \n  theme(\n    legend.position = c(1, 0),\n    legend.direction = \"vertical\",\n    legend.justification = c(1, 0)\n  )+\n  stat_ellipse()\n\n\n## Machine learning: choose most important protein\ninstall.packages(\"glmnet\", repos = \"http://cran.us.r-project.org\")\nlibrary(glmnet)\n\n\n## split to train and test\ninstall.packages('pROC')\nlibrary(caret)\ndata <- as.data.frame(er)\ndata$Group <- NA\ndata[1:50,'Group'] <- 'AD'\ndata[51:90,'Group'] <- 'NDC'\ninTraining <- createDataPartition(data$Group, p = .7, list = FALSE)\ntraining <- data[ inTraining,]\ntesting  <- data[-inTraining,]\n\n\n## 7-fold CV\nfitControl <- trainControl(\n  method = \"repeatedcv\",\n  number = 7,\n  repeats = 15,\n  classProbs = TRUE,\n  savePredictions = T,\n  summaryFunction = twoClassSummary)\n\nres <- train(Group ~.,data=data, method='glmnet', trControl=fitControl)\n",
+    "created" : 1469521350527.000,
+    "dirty" : true,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "415021472",
+    "id" : "E89C87F7",
+    "lastKnownWriteTime" : 1469611997,
+    "last_content_update" : 1469635019834,
+    "path" : "C:/Users/alex/alzhemerproject/Alzhemerproject/data_preposetion.R",
+    "project_path" : "data_preposetion.R",
+    "properties" : {
+        "source_window_id" : "",
+        "tempName" : "Untitled1"
+    },
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}
